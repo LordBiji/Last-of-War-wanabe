@@ -3,30 +3,35 @@ using TMPro;
 
 public class Timer : MonoBehaviour
 {
-    [SerializeField] TextMeshProUGUI timerText;
-    [SerializeField] float remainingTime;
+    [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private float remainingTime;
+    private bool isRunning = true;
+
+    public float RemainingTime => remainingTime; // Getter untuk waktu tersisa
 
     void Update()
     {
+        if (!isRunning) return;
+
         if (remainingTime > 0)
         {
             remainingTime -= Time.deltaTime;
         }
-        else if (remainingTime < 0)
+        else
         {
             remainingTime = 0;
-            GameOver();
+            isRunning = false;
             timerText.color = Color.red;
+            GameManager.Instance.OnTimeUp(); // Beri tahu GameManager kalau waktu habis
         }
 
+        UpdateTimerUI();
+    }
+
+    void UpdateTimerUI()
+    {
         int minutes = Mathf.FloorToInt(remainingTime / 60);
         int seconds = Mathf.FloorToInt(remainingTime % 60);
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-    }
-
-    void GameOver()
-    {
-        Debug.Log("Game Over!");
-        // Tambahkan logika game over di sini, misalnya memunculkan UI Game Over
     }
 }

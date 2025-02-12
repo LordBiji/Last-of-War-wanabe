@@ -103,7 +103,7 @@ public class PlayerController : MonoBehaviour
 
         if (pawns.Count < 1)
         {
-            GameOver();
+            GameManager.Instance.CheckGameOver(); // Cek apakah kalah
         }
     }
 
@@ -125,6 +125,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public int GetPawnCount()
+    {
+        return pawns.Count;
+    }
+
     void FireBullets()
     {
         float extraDamage = (float)extraPawnCount / 20f;
@@ -141,9 +146,4 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void GameOver()
-    {
-        Debug.Log("Game Over! Player has no more pawns.");
-        // Tambahkan logika seperti UI game over atau kembali ke menu
-    }
 }
