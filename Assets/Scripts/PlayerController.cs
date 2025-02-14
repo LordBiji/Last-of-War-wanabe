@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour
 
     private static PlayerController instance; // Singleton untuk referensi global
 
+    private Vector2 startTouchPosition, endTouchPosition;
+    private bool isSwiping = false;
+
     public static PlayerController Instance
     {
         get { return instance; }
@@ -44,13 +47,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        float moveX = 0f;
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) moveX = -1f;
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) moveX = 1f;
-
-        Vector3 newPosition = transform.position + Vector3.right * moveX * speed * Time.deltaTime;
-        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-        transform.position = newPosition;
+        HandleMovement();
 
         if (Time.time >= nextFireTime)
         {
@@ -59,9 +56,56 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ModifyPawnCount(int amount)
+    void HandleMovement()
     {
+        #if UNITY_EDITOR || UNITY_STANDALONE
+        float moveX = 0f;
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) moveX = -1f;
+        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) moveX = 1f;
+
+        Vector3 newPosition = transform.position + Vector3.right * moveX * speed * Time.deltaTime;
+        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+        transform.position = newPosition;
+        #endif
+
+        #if UNITY_ANDROID || UNITY_IOS
+        HandleSwipe();
+        #endif
+    }
+
+    void HandleSwipe()
+    {
+        if (Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                startTouchPosition = touch.position;
+                isSwiping = true;
+            }
+            else if (touch.phase == TouchPhase.Moved && isSwiping)
+            {
+                endTouchPosition = touch.position;
+                float difference = endTouchPosition.x - startTouchPosition.x;
+                float moveX = difference / Screen.width * speed * 2;
+                Vector3 newPosition = transform.position + Vector3.right * moveX;
+                newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
+                transform.position = newPosition;
+                startTouchPosition = endTouchPosition;
+            }
+            else if (touch.phase == TouchPhase.Ended)
+            {
+                isSwiping = false;
+            }
+        }
+    }
+
+        
+    public void ModifyPawnCount(int amount) 
+    {
+        
         if (amount > 0)
+        
         {
             for (int i = 0; i < amount; i++)
             {
@@ -83,6 +127,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         ArrangePawns();
+        
     }
 
     void AddPawn()

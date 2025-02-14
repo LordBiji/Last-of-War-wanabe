@@ -27,7 +27,7 @@ public class GameManager : MonoBehaviour
     {
         winCanvas.SetActive(false);
         loseCanvas.SetActive(false);
-        gameTimer = FindObjectOfType<Timer>(); // Ambil script Timer
+        gameTimer = FindFirstObjectByType<Timer>(); // Ambil script Timer
     }
 
     void Update()
