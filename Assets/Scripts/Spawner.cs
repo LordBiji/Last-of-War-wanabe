@@ -6,37 +6,41 @@ public class Spawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
     public GameObject barrierPrefab;
-    public Transform[] spawnPoints; // 3 titik spawn
-    public float spawnRate = 3f; // Waktu antar spawn
-    public float enemySpacing = 0.5f; // Jarak antar enemy dalam formasi
-    public int minEnemies = 3;
-    public int maxEnemies = 10;
+    public Transform[] spawnPoints;
+    public float spawnRate = 3f;
+    public float enemySpacing = 0.5f;
+    public WaveManager waveManager;
+
+    public GameObject bonusHPBarrierPrefab;
+    public GameObject weaponBarrierPrefab;
+
+    private HashSet<Transform> usedSpawnPoints = new HashSet<Transform>();
 
     private void Start()
     {
-        InvokeRepeating(nameof(SpawnWave), 2f, spawnRate);
+        StartCoroutine(SpawnWaves());
     }
 
-    void SpawnWave()
+    IEnumerator SpawnWaves()
     {
-        foreach (Transform spawnPoint in spawnPoints)
+        while (waveManager.HasMoreWaves())
         {
-            int spawnType = Random.Range(0, 3); // 0 = Tidak spawn, 1 = Enemy, 2 = Barrier
-
-            if (spawnType == 1)
-            {
-                SpawnEnemies(spawnPoint);
-            }
-            else if (spawnType == 2)
-            {
-                SpawnBarrier(spawnPoint);
-            }
+            usedSpawnPoints.Clear(); // Reset used spawn points at the start of each wave
+            SpawnWave();
+            yield return new WaitForSeconds(spawnRate);
+            waveManager.NextWave();
         }
     }
 
-    void SpawnEnemies(Transform spawnPoint)
+    int GetWeightedSpawnType()
     {
-        int enemyCount = Random.Range(minEnemies, maxEnemies + 1);
+        int[] spawnChances = { 0, 1, 1, 2, 2 }; // 1 = Enemy, 2 = Barrier biasa
+        return spawnChances[Random.Range(0, spawnChances.Length)];
+    }
+
+    void SpawnEnemies(Transform spawnPoint, WaveData wave)
+    {
+        int enemyCount = Random.Range(wave.minEnemies, wave.maxEnemies + 1);
         List<GameObject> enemies = new List<GameObject>();
 
         for (int i = 0; i < enemyCount; i++)
@@ -46,6 +50,7 @@ public class Spawner : MonoBehaviour
         }
 
         ArrangeEnemies(enemies, spawnPoint.position);
+        usedSpawnPoints.Add(spawnPoint); // Mark spawn point as used
     }
 
     void ArrangeEnemies(List<GameObject> enemies, Vector3 spawnPosition)
@@ -66,8 +71,125 @@ public class Spawner : MonoBehaviour
         }
     }
 
-    void SpawnBarrier(Transform spawnPoint)
+    void SpawnBarrier(Transform spawnPoint, WaveData wave)
     {
-        Instantiate(barrierPrefab, spawnPoint.position, Quaternion.identity);
+        GameObject barrierPrefabToSpawn = barrierPrefab; // Default barrier biasa
+        int barrierValue = Random.Range(wave.minBarrierValue, wave.maxBarrierValue + 1);
+
+        GameObject barrier = Instantiate(barrierPrefabToSpawn, spawnPoint.position, Quaternion.identity);
+        Barrier barrierScript = barrier.GetComponent<Barrier>();
+
+        if (barrierScript != null)
+        {
+            barrierScript.SetPawnEffect(-barrierValue);
+        }
+
+        usedSpawnPoints.Add(spawnPoint); // Mark spawn point as used
+    }
+
+    void SpawnWave()
+    {
+        WaveData currentWave = waveManager.GetCurrentWave();
+        if (currentWave == null) return;
+
+        bool isLastRepeat = (waveManager.GetCurrentWaveRepeatIndex() >= waveManager.GetCurrentWaveRepeatMax() - 1);
+
+        // Reservasi satu titik spawn untuk barrier spesial jika diaktifkan
+        Transform specialSpawnPoint = null;
+        if (isLastRepeat && (currentWave.addBonusHP || currentWave.addWeaponBarrier))
+        {
+            specialSpawnPoint = GetAvailableSpawnPoint();
+            if (specialSpawnPoint == null)
+            {
+                // Jika tidak ada titik spawn tersedia, hapus barrier biasa atau musuh dari satu titik spawn
+                specialSpawnPoint = FreeUpSpawnPoint();
+            }
+        }
+
+        foreach (Transform spawnPoint in spawnPoints)
+        {
+            // Jika titik spawn ini dipilih untuk special barrier, skip spawn barrier biasa atau musuh di sini
+            if (spawnPoint == specialSpawnPoint) continue;
+
+            int spawnType = GetWeightedSpawnType();
+
+            if (spawnType == 1) // Spawn Enemy
+            {
+                SpawnEnemies(spawnPoint, currentWave);
+            }
+            else if (spawnType == 2) // Spawn Barrier biasa
+            {
+                SpawnBarrier(spawnPoint, currentWave);
+            }
+        }
+
+        // Spawn special barrier hanya di satu titik
+        if (specialSpawnPoint != null)
+        {
+            SpawnSpecialBarriers(currentWave, specialSpawnPoint);
+        }
+    }
+
+    Transform GetAvailableSpawnPoint()
+    {
+        List<Transform> availableSpawnPoints = new List<Transform>(spawnPoints);
+        availableSpawnPoints.RemoveAll(sp => usedSpawnPoints.Contains(sp));
+
+        if (availableSpawnPoints.Count == 0) return null; // Jika semua titik sudah digunakan, tidak spawn
+
+        return availableSpawnPoints[Random.Range(0, availableSpawnPoints.Count)];
+    }
+
+    Transform FreeUpSpawnPoint()
+    {
+        // Pilih satu titik spawn secara acak dan hapus barrier biasa atau musuh yang ada di sana
+        Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+
+        // Hapus semua objek (barrier biasa atau musuh) di titik spawn ini
+        Collider[] colliders = Physics.OverlapSphere(spawnPoint.position, 0.1f);
+        foreach (Collider collider in colliders)
+        {
+            if (collider.CompareTag("Enemy") || collider.CompareTag("Barrier"))
+            {
+                Destroy(collider.gameObject);
+            }
+        }
+
+        usedSpawnPoints.Remove(spawnPoint); // Bebaskan titik spawn ini
+        return spawnPoint;
+    }
+
+    void SpawnSpecialBarriers(WaveData wave, Transform specialSpawnPoint)
+    {
+        if (specialSpawnPoint == null)
+        {
+            Debug.LogWarning("Tidak ada titik spawn tersedia untuk barrier spesial!");
+            return;
+        }
+
+        if (wave.addBonusHP)
+        {
+            SpawnBarrierAt(specialSpawnPoint, bonusHPBarrierPrefab, wave.minBonusHPValue, wave.maxBonusHPValue);
+            Debug.Log("Bonus HP Barrier spawned at: " + specialSpawnPoint.position);
+        }
+        else if (wave.addWeaponBarrier)
+        {
+            SpawnBarrierAt(specialSpawnPoint, weaponBarrierPrefab, wave.minWeaponBarrierValue, wave.maxWeaponBarrierValue);
+            Debug.Log("Weapon Barrier spawned at: " + specialSpawnPoint.position);
+        }
+
+        usedSpawnPoints.Add(specialSpawnPoint); // Tandai titik ini sebagai digunakan
+    }
+
+    void SpawnBarrierAt(Transform spawnPoint, GameObject prefab, int minValue, int maxValue)
+    {
+        int barrierValue = Random.Range(minValue, maxValue + 1);
+        GameObject barrier = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
+
+        Barrier barrierScript = barrier.GetComponent<Barrier>();
+        if (barrierScript != null)
+        {
+            barrierScript.SetPawnEffect(-barrierValue);
+        }
     }
 }

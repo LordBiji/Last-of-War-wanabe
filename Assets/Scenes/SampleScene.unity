@@ -1725,8 +1725,9 @@ MonoBehaviour:
   - {fileID: 1532123328}
   spawnRate: 3
   enemySpacing: 0.5
-  minEnemies: 3
-  maxEnemies: 10
+  waveManager: {fileID: 1483187782}
+  bonusHPBarrierPrefab: {fileID: 7727585342343131622, guid: 89f80ead5444dbf4a894dea3beb670e8, type: 3}
+  weaponBarrierPrefab: {fileID: 5765389781589426660, guid: 9d7dfc6a9fef5704494a4e57459a4815, type: 3}
 --- !u!4 &865349241
 Transform:
   m_ObjectHideFlags: 0
@@ -2462,14 +2463,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pawnPrefab: {fileID: 1063946572663222384, guid: 90ecdb93d090c564f86b279e2b84d694, type: 3}
   pawnParent: {fileID: 1429825099}
-  bulletPrefab: {fileID: 1823976330770123948, guid: 4ecd6b654b437434599f61dfa1b73037, type: 3}
-  spacing: 1
-  speed: 5
-  minX: -5
-  maxX: 5
+  speed: 10
   fireRate: 0.5
-  maxPawnCount: 20
-  baseBulletDamage: 10
+  shootPoint: {fileID: 0}
+  shootRange: 20
+  shootDamage: 10
+  shootableLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  bulletTrail: {fileID: 0}
+  bulletTrailDuration: 0.05
+  pawnHP: 3
+  pawnDPS: 1
 --- !u!4 &1429825099
 Transform:
   m_ObjectHideFlags: 0
@@ -2480,6 +2485,76 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1.29, z: -3.49}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1483187781
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1483187783}
+  - component: {fileID: 1483187782}
+  m_Layer: 0
+  m_Name: Wave Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1483187782
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483187781}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 048bf89fc39f89343831d591ddc2248e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waves:
+  - waveName: Begining
+    minEnemies: 3
+    maxEnemies: 10
+    minBarrierValue: -20
+    maxBarrierValue: -2
+    repeatCount: 5
+    addBonusHP: 1
+    minBonusHPValue: -33
+    maxBonusHPValue: 22
+    addWeaponBarrier: 0
+    minWeaponBarrierValue: 0
+    maxWeaponBarrierValue: 0
+  - waveName: Calling two
+    minEnemies: 4
+    maxEnemies: 5
+    minBarrierValue: -24
+    maxBarrierValue: -2
+    repeatCount: 3
+    addBonusHP: 0
+    minBonusHPValue: 0
+    maxBonusHPValue: 0
+    addWeaponBarrier: 1
+    minWeaponBarrierValue: 10
+    maxWeaponBarrierValue: 10
+  currentWaveIndex: 0
+--- !u!4 &1483187783
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483187781}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3210,4 +3285,5 @@ SceneRoots:
   - {fileID: 573327751}
   - {fileID: 853471431}
   - {fileID: 2088033968}
+  - {fileID: 1483187783}
   - {fileID: 2057940411}

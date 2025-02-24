@@ -5,39 +5,33 @@ public class PlayerController : MonoBehaviour
 {
     public GameObject pawnPrefab;
     public Transform pawnParent;
-    public GameObject bulletPrefab;
-    public float spacing = 1.5f;
     public float speed = 5f;
-    public float minX = -5f;
-    public float maxX = 5f;
     public float fireRate = 0.5f;
+    public Transform shootPoint;
+    public float shootRange = 20f;
+    public float shootDamage = 10f;
+    public LayerMask shootableLayers;
+    public LineRenderer bulletTrail;
+    public float bulletTrailDuration = 0.05f;
+
+    public int pawnHP = 3; // HP awal setiap pawn
+    public float pawnDPS = 1.0f; // Default DPS pawn
+
     private List<GameObject> pawns = new List<GameObject>();
     private float nextFireTime;
-
-    public int maxPawnCount = 20; // Batas maksimal pawn
-    private int extraPawnCount = 0; // Jumlah pawn tambahan
-    public float baseBulletDamage = 10f; // Damage dasar peluru
-
-    private static PlayerController instance; // Singleton untuk referensi global
+    private float moveDirection = 0f;
+    private float movementLimit = 5f;
 
     private Vector2 startTouchPosition, endTouchPosition;
     private bool isSwiping = false;
 
-    public static PlayerController Instance
-    {
-        get { return instance; }
-    }
+    private static PlayerController instance;
+    public static PlayerController Instance => instance;
 
     void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        if (instance == null) instance = this;
+        else Destroy(gameObject);
     }
 
     void Start()
@@ -47,6 +41,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        UpdateMovementLimit();
         HandleMovement();
 
         if (Time.time >= nextFireTime)
@@ -56,21 +51,28 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Update batas gerakan berdasarkan jumlah pawn
+    void UpdateMovementLimit()
+    {
+        int layers = Mathf.CeilToInt(Mathf.Sqrt(pawns.Count));
+        movementLimit = 5f - (layers - 1) * 0.5f;
+        movementLimit = Mathf.Max(movementLimit, 2f);
+    }
+
     void HandleMovement()
     {
-        #if UNITY_EDITOR || UNITY_STANDALONE
-        float moveX = 0f;
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) moveX = -1f;
-        if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) moveX = 1f;
+        moveDirection = 0f;
 
-        Vector3 newPosition = transform.position + Vector3.right * moveX * speed * Time.deltaTime;
-        newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-        transform.position = newPosition;
-        #endif
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Input.GetKey(KeyCode.LeftArrow)) moveDirection = -1f;
+        if (Input.GetKey(KeyCode.RightArrow)) moveDirection = 1f;
+#endif
 
-        #if UNITY_ANDROID || UNITY_IOS
+#if UNITY_ANDROID || UNITY_IOS
         HandleSwipe();
-        #endif
+#endif
+
+        MovePawns(moveDirection);
     }
 
     void HandleSwipe()
@@ -87,47 +89,46 @@ public class PlayerController : MonoBehaviour
             {
                 endTouchPosition = touch.position;
                 float difference = endTouchPosition.x - startTouchPosition.x;
-                float moveX = difference / Screen.width * speed * 2;
-                Vector3 newPosition = transform.position + Vector3.right * moveX;
-                newPosition.x = Mathf.Clamp(newPosition.x, minX, maxX);
-                transform.position = newPosition;
+                moveDirection = Mathf.Clamp(difference / Screen.width * 2f, -1f, 1f);
                 startTouchPosition = endTouchPosition;
             }
             else if (touch.phase == TouchPhase.Ended)
             {
                 isSwiping = false;
+                moveDirection = 0f;
             }
         }
     }
 
-        
-    public void ModifyPawnCount(int amount) 
+    void MovePawns(float direction)
     {
-        
-        if (amount > 0)
-        
+        Vector3 movement = Vector3.right * direction * speed * Time.deltaTime;
+
+        foreach (GameObject pawn in pawns)
         {
-            for (int i = 0; i < amount; i++)
+            Rigidbody rb = pawn.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                if (pawns.Count < maxPawnCount)
-                {
-                    AddPawn();
-                }
-                else
-                {
-                    extraPawnCount++; // Jika lebih dari 20, jadi tambahan damage
-                }
+                Vector3 newPosition = rb.position + movement;
+                newPosition.x = Mathf.Clamp(newPosition.x, -movementLimit, movementLimit);
+                rb.MovePosition(newPosition);
             }
+        }
+    }
+
+    public void ModifyPawnCount(int amount)
+    {
+        if (amount > 0)
+        {
+            for (int i = 0; i < amount; i++) AddPawn();
         }
         else if (amount < 0)
         {
-            for (int i = 0; i < -amount; i++)
-            {
-                RemovePawn();
-            }
+            for (int i = 0; i < -amount; i++) RemovePawn();
         }
+
         ArrangePawns();
-        
+        GameManager.Instance.CheckGameOver();
     }
 
     void AddPawn()
@@ -148,26 +149,99 @@ public class PlayerController : MonoBehaviour
 
         if (pawns.Count < 1)
         {
-            GameManager.Instance.CheckGameOver(); // Cek apakah kalah
+            GameManager.Instance.CheckGameOver();
         }
     }
 
     void ArrangePawns()
     {
         int count = pawns.Count;
-        float radiusStep = spacing * 0.5f;
-        float angleOffset = 137.5f;
+        float radiusStep = 1f;
+        int layers = Mathf.CeilToInt(Mathf.Sqrt(count));
 
-        for (int i = 0; i < count; i++)
+        int currentIndex = 0;
+        for (int layer = 0; layer < layers && currentIndex < count; layer++)
         {
-            float radius = Mathf.Sqrt(i) * radiusStep;
-            float angle = i * angleOffset * Mathf.Deg2Rad;
+            int pointsInLayer = layer == 0 ? 1 : (layer * 6);
+            float angleStep = 360f / Mathf.Max(1, pointsInLayer);
 
-            float xPos = Mathf.Cos(angle) * radius;
-            float zPos = Mathf.Sin(angle) * radius;
+            for (int i = 0; i < pointsInLayer && currentIndex < count; i++)
+            {
+                float angle = i * angleStep * Mathf.Deg2Rad;
+                float xPos = Mathf.Cos(angle) * (layer * radiusStep);
+                float zPos = Mathf.Sin(angle) * (layer * radiusStep);
 
-            pawns[i].transform.localPosition = new Vector3(xPos, 0, zPos);
+                pawns[currentIndex].transform.localPosition = new Vector3(xPos, 0, zPos);
+                currentIndex++;
+            }
         }
+    }
+
+    public void IncreasePawnHP(int amount)
+    {
+        pawnHP += amount;
+        Debug.Log("Pawn HP meningkat: " + amount);
+    }
+
+    public void IncreasePawnDPS(float amount)
+    {
+        pawnDPS += amount;
+        Debug.Log("Pawn DPS meningkat: " + amount);
+    }
+
+    void FireBullets()
+    {
+        foreach (GameObject pawn in pawns)
+        {
+            ShootRaycast(pawn.transform.position);
+        }
+    }
+
+    void ShootRaycast(Vector3 shootOrigin)
+    {
+        RaycastHit hit;
+        Vector3 shootDirection = transform.forward;
+
+        if (Physics.Raycast(shootOrigin, shootDirection, out hit, shootRange, shootableLayers))
+        {
+            // Jika mengenai Barrier
+            Barrier barrier = hit.collider.GetComponent<Barrier>();
+            if (barrier != null)
+            {
+                barrier.ReceiveShot(shootDamage);
+            }
+
+            // Jika mengenai Enemy
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.ReceiveShot(shootDamage);
+            }
+
+            ShowBulletTrail(shootOrigin, hit.point);
+        }
+        else
+        {
+            Vector3 targetPoint = shootOrigin + shootDirection * shootRange;
+            ShowBulletTrail(shootOrigin, targetPoint);
+        }
+    }
+
+
+    void ShowBulletTrail(Vector3 start, Vector3 end)
+    {
+        if (bulletTrail != null)
+        {
+            bulletTrail.SetPosition(0, start);
+            bulletTrail.SetPosition(1, end);
+            bulletTrail.enabled = true;
+            Invoke(nameof(HideBulletTrail), bulletTrailDuration);
+        }
+    }
+
+    void HideBulletTrail()
+    {
+        bulletTrail.enabled = false;
     }
 
     public int GetPawnCount()
@@ -175,20 +249,16 @@ public class PlayerController : MonoBehaviour
         return pawns.Count;
     }
 
-    void FireBullets()
+    private void OnTriggerEnter(Collider other)
     {
-        float extraDamage = (float)extraPawnCount / 20f;
-        float bulletDamage = baseBulletDamage + extraDamage;
-
-        foreach (GameObject pawn in pawns)
+        if (other.CompareTag("Barrier"))
         {
-            GameObject bullet = Instantiate(bulletPrefab, pawn.transform.position, Quaternion.identity);
-            Bullet bulletScript = bullet.GetComponent<Bullet>();
-            if (bulletScript != null)
-            {
-                bulletScript.SetDamage(bulletDamage);
-            }
+            ModifyPawnCount(-1);
+        }
+        else if (other.CompareTag("Enemy"))
+        {
+            ModifyPawnCount(-1);
+            Destroy(other.gameObject);
         }
     }
-
 }

@@ -14,18 +14,8 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Jika terkena bullet
-        if (other.CompareTag("Bullet"))
-        {
-            Bullet bullet = other.GetComponent<Bullet>();
-            if (bullet != null)
-            {
-                TakeDamage(bullet.bulletValue); // Ambil damage dari bullet
-            }
-            Destroy(other.gameObject); // Hancurkan bullet
-        }
         // Jika bertabrakan dengan Player
-        else if (other.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
             PlayerController player = other.GetComponent<PlayerController>();
             if (player != null)
@@ -36,12 +26,13 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TakeDamage(float damage)
+    // Metode ini dipanggil saat terkena Raycast dari Player
+    public void ReceiveShot(float damage)
     {
         health -= damage;
         if (health <= 0)
         {
-            Destroy(gameObject); // Musuh hancur jika HP habis
+            Destroy(gameObject); // Enemy hancur jika HP habis
         }
     }
 }

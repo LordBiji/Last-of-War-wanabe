@@ -3,54 +3,51 @@ using TMPro;
 
 public class Barrier : MonoBehaviour
 {
-    public int value;
-    public float speed = 5f; // Kecepatan barrier bergerak
-    public TextMeshProUGUI valueText; // UI untuk menampilkan nilai barrier
+    public int pawnEffect; // Nilai yang diberikan ke Player saat bertabrakan
+    public static float GlobalSpeed = 5f; // Kecepatan sentral untuk semua Barrier
+    public TextMeshProUGUI valueText;
 
     void Start()
     {
-        // Set nilai awal secara acak antara -30 hingga 3
-        value = Random.Range(-30, 4);
-        UpdateValueText();
+        UpdateText();
     }
 
     void Update()
     {
-        // Barrier bergerak maju
-        transform.Translate(Vector3.back * speed * Time.deltaTime);
+        transform.Translate(Vector3.back * GlobalSpeed * Time.deltaTime);
     }
 
-    public void ModifyValue(int amount)
-    {
-        value = Mathf.Min(value + amount, 5); // Batasi nilai maksimal sampai 5
-        UpdateValueText();
-    }
-
-    void UpdateValueText()
+    public void UpdateText()
     {
         if (valueText != null)
         {
-            valueText.text = value.ToString();
+            valueText.text = pawnEffect.ToString();
+            valueText.color = (pawnEffect > 0) ? Color.green : Color.red;
         }
+    }
+
+    public void SetPawnEffect(int value)
+    {
+        pawnEffect = value;
+        UpdateText();
+    }
+
+    public virtual void ReceiveShot(float damage)
+    {
+        pawnEffect += 1; // Setiap tembakan, nilainya bertambah
+        UpdateText();
     }
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Barrier bertabrakan dengan: " + other.gameObject.name);
-
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Barrier menyentuh Player!");
-
-            if (other.CompareTag("Player"))
+            PlayerController player = other.GetComponentInParent<PlayerController>();
+            if (player != null)
             {
-                PlayerController player = other.GetComponentInParent<PlayerController>(); // Ambil dari Parent
-                if (player != null)
-                {
-                    player.ModifyPawnCount(value);
-                    Destroy(gameObject);
-                }
+                player.ModifyPawnCount(pawnEffect);
             }
+            Destroy(gameObject);
         }
     }
 }
