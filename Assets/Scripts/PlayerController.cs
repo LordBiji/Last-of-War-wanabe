@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class PlayerController : MonoBehaviour
@@ -7,12 +8,13 @@ public class PlayerController : MonoBehaviour
     public Transform pawnParent;
     public float speed = 5f;
     public float fireRate = 0.5f;
-    public Transform shootPoint;
     public float shootRange = 20f;
     public float shootDamage = 10f;
     public LayerMask shootableLayers;
     public LineRenderer bulletTrail;
-    public float bulletTrailDuration = 0.05f;
+    public float bulletTrailDuration = 0.1f; // Durasi Line Renderer
+    public Color bulletTrailColor = Color.yellow; // Warna Line Renderer
+    public float bulletTrailWidth = 0.1f; // Lebar Line Renderer
 
     public int pawnHP = 3; // HP awal setiap pawn
     public float pawnDPS = 1.0f; // Default DPS pawn
@@ -36,6 +38,16 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        // Atur Line Renderer
+        if (bulletTrail != null)
+        {
+            bulletTrail.startColor = bulletTrailColor;
+            bulletTrail.endColor = bulletTrailColor;
+            bulletTrail.startWidth = bulletTrailWidth;
+            bulletTrail.endWidth = bulletTrailWidth;
+            bulletTrail.enabled = false;
+        }
+
         AddPawn();
     }
 
@@ -104,16 +116,10 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 movement = Vector3.right * direction * speed * Time.deltaTime;
 
-        foreach (GameObject pawn in pawns)
-        {
-            Rigidbody rb = pawn.GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                Vector3 newPosition = rb.position + movement;
-                newPosition.x = Mathf.Clamp(newPosition.x, -movementLimit, movementLimit);
-                rb.MovePosition(newPosition);
-            }
-        }
+        // Gerakkan parent (player) dan semua pawn akan mengikuti
+        Vector3 newPosition = transform.position + movement;
+        newPosition.x = Mathf.Clamp(newPosition.x, -movementLimit, movementLimit);
+        transform.position = newPosition;
     }
 
     public void ModifyPawnCount(int amount)
@@ -127,30 +133,40 @@ public class PlayerController : MonoBehaviour
             for (int i = 0; i < -amount; i++) RemovePawn();
         }
 
-        ArrangePawns();
+        StartCoroutine(DelayedArrangePawns(0.5f)); // Delay sebelum mengatur ulang formasi
         GameManager.Instance.CheckGameOver();
     }
 
-    void AddPawn()
+    public void AddPawn()
     {
         GameObject newPawn = Instantiate(pawnPrefab, pawnParent);
         pawns.Add(newPawn);
         ArrangePawns();
     }
 
-    void RemovePawn()
+    public void RemovePawn()
     {
         if (pawns.Count > 0)
         {
             GameObject lastPawn = pawns[pawns.Count - 1];
-            pawns.Remove(lastPawn);
+            pawns.Remove(lastPawn); // Hapus dari daftar sebelum dihancurkan
             Destroy(lastPawn);
+            StartCoroutine(DelayedArrangePawns(0.5f)); // Delay sebelum mengatur ulang formasi
         }
 
         if (pawns.Count < 1)
         {
             GameManager.Instance.CheckGameOver();
         }
+    }
+
+    IEnumerator DelayedArrangePawns(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Hapus referensi yang null sebelum mengatur ulang formasi
+        pawns.RemoveAll(pawn => pawn == null);
+        ArrangePawns();
     }
 
     void ArrangePawns()
@@ -171,7 +187,10 @@ public class PlayerController : MonoBehaviour
                 float xPos = Mathf.Cos(angle) * (layer * radiusStep);
                 float zPos = Mathf.Sin(angle) * (layer * radiusStep);
 
-                pawns[currentIndex].transform.localPosition = new Vector3(xPos, 0, zPos);
+                if (pawns[currentIndex] != null) // Pastikan pawn belum dihancurkan
+                {
+                    pawns[currentIndex].transform.localPosition = new Vector3(xPos, 0, zPos);
+                }
                 currentIndex++;
             }
         }
@@ -191,10 +210,11 @@ public class PlayerController : MonoBehaviour
 
     void FireBullets()
     {
-        foreach (GameObject pawn in pawns)
-        {
-            ShootRaycast(pawn.transform.position);
-        }
+        // Gunakan titik tembak global di depan formasi pawn
+        Vector3 shootOrigin = transform.position + Vector3.forward * 1f; // Sesuaikan offset jika perlu
+
+        // Tembakkan raycast dari titik tembak global
+        ShootRaycast(shootOrigin);
     }
 
     void ShootRaycast(Vector3 shootOrigin)
@@ -227,7 +247,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     void ShowBulletTrail(Vector3 start, Vector3 end)
     {
         if (bulletTrail != null)
@@ -241,7 +260,10 @@ public class PlayerController : MonoBehaviour
 
     void HideBulletTrail()
     {
-        bulletTrail.enabled = false;
+        if (bulletTrail != null)
+        {
+            bulletTrail.enabled = false;
+        }
     }
 
     public int GetPawnCount()

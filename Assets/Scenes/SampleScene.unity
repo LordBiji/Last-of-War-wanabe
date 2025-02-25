@@ -2465,14 +2465,15 @@ MonoBehaviour:
   pawnParent: {fileID: 1429825099}
   speed: 10
   fireRate: 0.5
-  shootPoint: {fileID: 0}
   shootRange: 20
   shootDamage: 10
   shootableLayers:
     serializedVersion: 2
-    m_Bits: 0
-  bulletTrail: {fileID: 0}
+    m_Bits: 64
+  bulletTrail: {fileID: 620849456970500004, guid: 6aa56d3825ec8de4dbfd9f474d5c0c66, type: 3}
   bulletTrailDuration: 0.05
+  bulletTrailColor: {r: 0.30132103, g: 1, b: 0, a: 1}
+  bulletTrailWidth: 0.1
   pawnHP: 3
   pawnDPS: 1
 --- !u!4 &1429825099
@@ -2523,11 +2524,11 @@ MonoBehaviour:
   - waveName: Begining
     minEnemies: 3
     maxEnemies: 10
-    minBarrierValue: -20
-    maxBarrierValue: -2
+    minBarrierValue: 5
+    maxBarrierValue: 10
     repeatCount: 5
     addBonusHP: 1
-    minBonusHPValue: -33
+    minBonusHPValue: 20
     maxBonusHPValue: 22
     addWeaponBarrier: 0
     minWeaponBarrierValue: 0
@@ -2542,8 +2543,8 @@ MonoBehaviour:
     minBonusHPValue: 0
     maxBonusHPValue: 0
     addWeaponBarrier: 1
-    minWeaponBarrierValue: 10
-    maxWeaponBarrierValue: 10
+    minWeaponBarrierValue: 40
+    maxWeaponBarrierValue: 40
   currentWaveIndex: 0
 --- !u!4 &1483187783
 Transform:

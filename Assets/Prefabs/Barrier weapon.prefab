@@ -252,7 +252,7 @@ GameObject:
   - component: {fileID: 698779646401131054}
   - component: {fileID: 394318647871317150}
   - component: {fileID: 829233705075721909}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Barrier weapon
   m_TagString: Barrier
   m_Icon: {fileID: 0}
@@ -364,7 +364,6 @@ MonoBehaviour:
   pawnEffect: 0
   valueText: {fileID: 6296738761926196188}
   dpsIncreaseAmount: 0.2
-  speedBW: 3
 --- !u!54 &829233705075721909
 Rigidbody:
   m_ObjectHideFlags: 0
