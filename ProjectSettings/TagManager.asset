@@ -7,6 +7,7 @@ TagManager:
   - Barrier
   - Bullet
   - Enemy
+  - Pawn
   layers:
   - Default
   - TransparentFX

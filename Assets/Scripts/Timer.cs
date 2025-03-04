@@ -22,7 +22,7 @@ public class Timer : MonoBehaviour
             remainingTime = 0;
             isRunning = false;
             timerText.color = Color.red;
-            GameManager.Instance.OnTimeUp(); // Beri tahu GameManager kalau waktu habis
+            //GameManager.Instance.OnTimeUp(); // Beri tahu GameManager kalau waktu habis
         }
 
         UpdateTimerUI();

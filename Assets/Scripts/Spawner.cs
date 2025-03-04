@@ -6,6 +6,7 @@ public class Spawner : MonoBehaviour
 {
     public GameObject enemyPrefab;
     public GameObject barrierPrefab;
+    public GameObject bossPrefab; // Prefab boss
     public Transform[] spawnPoints;
     public float spawnRate = 3f;
     public float enemySpacing = 0.5f;
@@ -15,6 +16,7 @@ public class Spawner : MonoBehaviour
     public GameObject weaponBarrierPrefab;
 
     private HashSet<Transform> usedSpawnPoints = new HashSet<Transform>();
+    private bool isBossSpawned = false; // Apakah boss sudah di-spawn di wave ini?
 
     private void Start()
     {
@@ -26,6 +28,7 @@ public class Spawner : MonoBehaviour
         while (waveManager.HasMoreWaves())
         {
             usedSpawnPoints.Clear(); // Reset used spawn points at the start of each wave
+            isBossSpawned = false; // Reset status boss
             SpawnWave();
             yield return new WaitForSeconds(spawnRate);
             waveManager.NextWave();
@@ -94,7 +97,15 @@ public class Spawner : MonoBehaviour
 
         bool isLastRepeat = (waveManager.GetCurrentWaveRepeatIndex() >= waveManager.GetCurrentWaveRepeatMax() - 1);
 
-        // Reservasi satu titik spawn untuk barrier spesial jika diaktifkan
+        // Jika ini adalah pengulangan terakhir dan wave memiliki boss, spawn boss saja
+        if (isLastRepeat && currentWave.spawnBoss && !isBossSpawned)
+        {
+            SpawnBoss(currentWave.bossHP);
+            isBossSpawned = true; // Tandai boss sudah di-spawn
+            return; // Hentikan spawn obstacle lain
+        }
+
+        // Jika bukan pengulangan terakhir atau tidak ada boss, spawn obstacle seperti biasa
         Transform specialSpawnPoint = null;
         if (isLastRepeat && (currentWave.addBonusHP || currentWave.addWeaponBarrier))
         {
@@ -127,6 +138,25 @@ public class Spawner : MonoBehaviour
         if (specialSpawnPoint != null)
         {
             SpawnSpecialBarriers(currentWave, specialSpawnPoint);
+        }
+    }
+
+    void SpawnBoss(int bossHP)
+    {
+        Transform spawnPoint = GetAvailableSpawnPoint();
+        if (spawnPoint != null)
+        {
+            GameObject boss = Instantiate(bossPrefab, spawnPoint.position, Quaternion.identity);
+            Boss bossScript = boss.GetComponent<Boss>();
+            if (bossScript != null)
+            {
+                bossScript.SetHP(bossHP); // Atur HP boss
+            }
+            Debug.Log("Boss muncul dengan HP: " + bossHP);
+        }
+        else
+        {
+            Debug.LogWarning("Tidak ada titik spawn tersedia untuk boss!");
         }
     }
 

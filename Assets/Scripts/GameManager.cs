@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
     public GameObject loseCanvas;
     private bool gameEnded = false;
 
-    private Timer gameTimer;
+    private WaveManager waveManager;
 
     void Awake()
     {
@@ -27,14 +27,15 @@ public class GameManager : MonoBehaviour
     {
         winCanvas.SetActive(false);
         loseCanvas.SetActive(false);
-        gameTimer = FindFirstObjectByType<Timer>(); // Ambil script Timer
+        waveManager = FindFirstObjectByType<WaveManager>(); // Ambil script WaveManager
     }
 
     void Update()
     {
         if (!gameEnded)
         {
-            CheckGameOver(); // Periksa apakah pawn habis sebelum waktu habis
+            CheckGameOver(); // Periksa apakah pawn habis
+            CheckWinCondition(); // Periksa apakah pemain memenuhi win condition
         }
     }
 
@@ -46,17 +47,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void OnTimeUp()
+    public void CheckWinCondition()
     {
-        if (gameEnded) return;
-
-        if (PlayerController.Instance.GetPawnCount() > 0)
+        // Win condition: Semua wave selesai DAN tidak ada musuh atau boss yang tersisa
+        if (waveManager.HasMoreWaves() == false && EnemyManager.Instance.AreAllEnemiesDefeated())
         {
             WinGame();
-        }
-        else
-        {
-            LoseGame();
         }
     }
 

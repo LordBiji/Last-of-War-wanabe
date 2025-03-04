@@ -6,6 +6,18 @@ public class Enemy : MonoBehaviour
     public float health = 20f; // HP musuh
     public int damage = 1;    // Jumlah pawn yang berkurang jika menabrak player
 
+
+    void Start()
+    {
+        // Daftarkan diri ke EnemyManager saat di-spawn
+        EnemyManager.Instance.RegisterEnemy(this);
+    }
+
+    void OnDestroy()
+    {
+        // Hapus diri dari EnemyManager saat dihancurkan
+        EnemyManager.Instance.UnregisterEnemy(this);
+    }
     void Update()
     {
         // Enemy bergerak maju ke arah pemain
@@ -14,15 +26,16 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // Jika bertabrakan dengan Player
+        // Jika bertabrakan dengan Pawn (dengan tag "Player")
         if (other.CompareTag("Player"))
         {
-            PlayerController player = other.GetComponent<PlayerController>();
+            PlayerController player = PlayerController.Instance;
             if (player != null)
             {
-                player.ModifyPawnCount(-damage); // Kurangi jumlah pawn
+                // Hancurkan Pawn yang bertabrakan
+                player.DestroyPawnOnCollision(other);
             }
-            Destroy(gameObject); // Enemy hancur setelah menabrak player
+            Destroy(gameObject); // Enemy hancur setelah menabrak Pawn
         }
     }
 

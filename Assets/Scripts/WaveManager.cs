@@ -4,20 +4,33 @@ using System.Collections.Generic;
 [System.Serializable]
 public class WaveData
 {
+    [Header("Enemy Settings")]
     public string waveName; // Nama wave (untuk debugging)
     public int minEnemies;
     public int maxEnemies;
+
+    [Space(10)] // Jarak 10 pixel
+    [Header("Barrier Settings")]
     public int minBarrierValue;
     public int maxBarrierValue;
     public int repeatCount = 1; // Berapa kali wave ini diulang sebelum ke wave berikutnya
 
+    [Space(10)] // Jarak 10 pixel
+    [Header("Bonus HP Barrier")]
     public bool addBonusHP;
     public int minBonusHPValue;
     public int maxBonusHPValue;
 
+    [Space(10)] // Jarak 10 pixel
+    [Header("Weapon Barrier")]
     public bool addWeaponBarrier;
     public int minWeaponBarrierValue;
     public int maxWeaponBarrierValue;
+
+    [Space(10)] // Jarak 10 pixel
+    [Header("Boss Settings")]
+    public bool spawnBoss; // Apakah wave ini memiliki boss?
+    public int bossHP; // HP boss
 }
 
 public class WaveManager : MonoBehaviour

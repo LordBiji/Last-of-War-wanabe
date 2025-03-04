@@ -11,11 +11,12 @@ public class PlayerController : MonoBehaviour
     public float shootRange = 20f;
     public float shootDamage = 10f;
     public LayerMask shootableLayers;
-    public LineRenderer bulletTrail;
-    public float bulletTrailDuration = 0.1f; // Durasi Line Renderer
-    public Color bulletTrailColor = Color.yellow; // Warna Line Renderer
-    public float bulletTrailWidth = 0.1f; // Lebar Line Renderer
+    public GameObject[] bulletPrefabs; // Array prefab peluru berdasarkan DPS
+    public float bulletSpeed = 10f; // Kecepatan peluru
+    public float bulletLifetime = 2f; // Durasi peluru sebelum dihancurkan
+    public float bulletRadius = 0.5f; // Radius deteksi tabrakan peluru
 
+    public GameObject[] pawnModels; // Array prefab model Pawn berdasarkan level HP
     public int pawnHP = 3; // HP awal setiap pawn
     public float pawnDPS = 1.0f; // Default DPS pawn
 
@@ -38,16 +39,6 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        // Atur Line Renderer
-        if (bulletTrail != null)
-        {
-            bulletTrail.startColor = bulletTrailColor;
-            bulletTrail.endColor = bulletTrailColor;
-            bulletTrail.startWidth = bulletTrailWidth;
-            bulletTrail.endWidth = bulletTrailWidth;
-            bulletTrail.enabled = false;
-        }
-
         AddPawn();
     }
 
@@ -133,25 +124,25 @@ public class PlayerController : MonoBehaviour
             for (int i = 0; i < -amount; i++) RemovePawn();
         }
 
-        StartCoroutine(DelayedArrangePawns(0.5f)); // Delay sebelum mengatur ulang formasi
-        GameManager.Instance.CheckGameOver();
+        ArrangePawns(); // Atur ulang formasi langsung setelah perubahan jumlah pawn
     }
 
-    public void AddPawn()
+    void AddPawn()
     {
         GameObject newPawn = Instantiate(pawnPrefab, pawnParent);
         pawns.Add(newPawn);
-        ArrangePawns();
+        UpdatePawnModel(newPawn); // Perbarui model Pawn saat ditambahkan
+        ArrangePawns(); // Atur ulang formasi langsung setelah penambahan pawn
     }
 
-    public void RemovePawn()
+    void RemovePawn()
     {
         if (pawns.Count > 0)
         {
             GameObject lastPawn = pawns[pawns.Count - 1];
             pawns.Remove(lastPawn); // Hapus dari daftar sebelum dihancurkan
             Destroy(lastPawn);
-            StartCoroutine(DelayedArrangePawns(0.5f)); // Delay sebelum mengatur ulang formasi
+            ArrangePawns(); // Atur ulang formasi langsung setelah penghancuran pawn
         }
 
         if (pawns.Count < 1)
@@ -160,17 +151,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    IEnumerator DelayedArrangePawns(float delay)
+    public void ArrangePawns()
     {
-        yield return new WaitForSeconds(delay);
-
         // Hapus referensi yang null sebelum mengatur ulang formasi
         pawns.RemoveAll(pawn => pawn == null);
-        ArrangePawns();
-    }
 
-    void ArrangePawns()
-    {
         int count = pawns.Count;
         float radiusStep = 1f;
         int layers = Mathf.CeilToInt(Mathf.Sqrt(count));
@@ -200,6 +185,31 @@ public class PlayerController : MonoBehaviour
     {
         pawnHP += amount;
         Debug.Log("Pawn HP meningkat: " + amount);
+
+        // Perbarui model Pawn berdasarkan HP
+        UpdatePawnModels();
+    }
+
+    void UpdatePawnModels()
+    {
+        foreach (GameObject pawn in pawns)
+        {
+            if (pawn != null)
+            {
+                UpdatePawnModel(pawn);
+            }
+        }
+    }
+
+    void UpdatePawnModel(GameObject pawn)
+    {
+        // Tentukan level HP Pawn
+        int hpLevel = Mathf.FloorToInt(pawnHP / 5); // Contoh: Setiap 10 HP, naik level
+        hpLevel = Mathf.Clamp(hpLevel, 0, pawnModels.Length - 1); // Pastikan level tidak melebihi jumlah prefab
+
+        // Ganti model Pawn
+        GameObject newModel = Instantiate(pawnModels[hpLevel], pawn.transform.position, pawn.transform.rotation, pawn.transform);
+        Destroy(pawn.transform.GetChild(0).gameObject); // Hapus model lama
     }
 
     public void IncreasePawnDPS(float amount)
@@ -210,17 +220,20 @@ public class PlayerController : MonoBehaviour
 
     void FireBullets()
     {
-        // Gunakan titik tembak global di depan formasi pawn
-        Vector3 shootOrigin = transform.position + Vector3.forward * 1f; // Sesuaikan offset jika perlu
-
-        // Tembakkan raycast dari titik tembak global
-        ShootRaycast(shootOrigin);
+        foreach (GameObject pawn in pawns)
+        {
+            if (pawn != null) // Pastikan pawn belum dihancurkan
+            {
+                Vector3 shootOrigin = pawn.transform.position + pawn.transform.forward * 1f; // Titik tembak di depan pawn
+                shootOrigin.y += 0.5f; // Menambah offset ke atas (bisa disesuaikan nilainya)
+                ShootRaycast(shootOrigin, pawn.transform.forward);
+            }
+        }
     }
 
-    void ShootRaycast(Vector3 shootOrigin)
+    void ShootRaycast(Vector3 shootOrigin, Vector3 shootDirection)
     {
         RaycastHit hit;
-        Vector3 shootDirection = transform.forward;
 
         if (Physics.Raycast(shootOrigin, shootDirection, out hit, shootRange, shootableLayers))
         {
@@ -228,7 +241,7 @@ public class PlayerController : MonoBehaviour
             Barrier barrier = hit.collider.GetComponent<Barrier>();
             if (barrier != null)
             {
-                barrier.ReceiveShot(shootDamage);
+                barrier.ReceiveShot(1); // Kirim damage sebesar 1
             }
 
             // Jika mengenai Enemy
@@ -238,10 +251,19 @@ public class PlayerController : MonoBehaviour
                 enemy.ReceiveShot(shootDamage);
             }
 
+            // Jika mengenai Boss
+            Boss boss = hit.collider.GetComponentInParent<Boss>();
+            if (boss != null)
+            {
+                boss.ReceiveShot(shootDamage);
+            }
+
+            // Tampilkan visual peluru ke titik tumbukan
             ShowBulletTrail(shootOrigin, hit.point);
         }
         else
         {
+            // Tampilkan visual peluru ke titik maksimum jarak tembak
             Vector3 targetPoint = shootOrigin + shootDirection * shootRange;
             ShowBulletTrail(shootOrigin, targetPoint);
         }
@@ -249,21 +271,70 @@ public class PlayerController : MonoBehaviour
 
     void ShowBulletTrail(Vector3 start, Vector3 end)
     {
-        if (bulletTrail != null)
-        {
-            bulletTrail.SetPosition(0, start);
-            bulletTrail.SetPosition(1, end);
-            bulletTrail.enabled = true;
-            Invoke(nameof(HideBulletTrail), bulletTrailDuration);
-        }
+        // Pilih prefab peluru berdasarkan DPS
+        int prefabIndex = Mathf.FloorToInt(pawnDPS / 0.5f) % bulletPrefabs.Length; // Contoh: Setiap 10 DPS, ganti peluru
+        if (prefabIndex < 0) prefabIndex = 0; // Pastikan tidak negatif
+        GameObject bulletPrefab = bulletPrefabs[prefabIndex];
+
+        // Buat instance peluru
+        GameObject bullet = Instantiate(bulletPrefab, start, Quaternion.identity);
+
+        // Atur arah peluru
+        bullet.transform.forward = (end - start).normalized;
+
+        // Gerakkan peluru ke target
+        StartCoroutine(MoveBullet(bullet, start, end));
     }
 
-    void HideBulletTrail()
+    IEnumerator MoveBullet(GameObject bullet, Vector3 start, Vector3 end)
     {
-        if (bulletTrail != null)
+        float distance = Vector3.Distance(start, end);
+        float duration = distance / bulletSpeed;
+
+        float elapsedTime = 0f;
+        while (elapsedTime < duration)
         {
-            bulletTrail.enabled = false;
+            // Periksa tabrakan selama peluru bergerak
+            if (CheckBulletCollision(bullet.transform.position))
+            {
+                Destroy(bullet); // Hancurkan peluru jika terkena objek
+                yield break; // Hentikan coroutine
+            }
+
+            // Gerakkan peluru
+            bullet.transform.position = Vector3.Lerp(start, end, elapsedTime / duration);
+            elapsedTime += Time.deltaTime;
+            yield return null;
         }
+
+        // Hancurkan peluru setelah mencapai target
+        Destroy(bullet);
+    }
+
+    bool CheckBulletCollision(Vector3 position)
+    {
+        // Gunakan SphereCast untuk mendeteksi tabrakan
+        RaycastHit hit;
+        if (Physics.SphereCast(position, bulletRadius, Vector3.forward, out hit, 0.1f, shootableLayers))
+        {
+            // Jika mengenai Barrier
+            Barrier barrier = hit.collider.GetComponent<Barrier>();
+            if (barrier != null)
+            {
+                barrier.ReceiveShot(shootDamage);
+                return true; // Peluru hancur
+            }
+
+            // Jika mengenai Enemy
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.ReceiveShot(shootDamage);
+                return true; // Peluru hancur
+            }
+        }
+
+        return false; // Tidak ada tabrakan
     }
 
     public int GetPawnCount()
@@ -271,16 +342,24 @@ public class PlayerController : MonoBehaviour
         return pawns.Count;
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void DestroyPawnOnCollision(Collider other)
     {
-        if (other.CompareTag("Barrier"))
+        for (int i = 0; i < pawns.Count; i++)
         {
-            ModifyPawnCount(-1);
+            if (pawns[i] != null && pawns[i].GetComponent<Collider>() == other)
+            {
+                GameObject pawnToDestroy = pawns[i];
+                pawns.RemoveAt(i); // Hapus dari daftar
+                Destroy(pawnToDestroy); // Hancurkan pawn
+                ArrangePawns(); // Atur ulang formasi setelah penghancuran
+                break;
+            }
         }
-        else if (other.CompareTag("Enemy"))
+
+        // Periksa apakah pawn sudah habis
+        if (pawns.Count < 1)
         {
-            ModifyPawnCount(-1);
-            Destroy(other.gameObject);
+            GameManager.Instance.CheckGameOver();
         }
     }
 }

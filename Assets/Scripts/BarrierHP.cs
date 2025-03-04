@@ -3,51 +3,52 @@ using UnityEngine;
 public class BarrierHP : Barrier
 {
     public int hpIncreaseAmount = 1; // Berapa HP yang ditambahkan ke tiap pawn
-    private Transform playerTransform;
     private bool isUnlocked = false; // Apakah barrier sudah terbuka?
-
-    void Start()
-    {
-        playerTransform = FindAnyObjectByType<PlayerController>().transform; // Cari posisi Player
-    }
+    private bool effectApplied = false; // Apakah efek sudah diterapkan?
 
     void Update()
     {
-        if (playerTransform != null)
-        {
-            transform.Translate(Vector3.back * Barrier.GlobalSpeed * Time.deltaTime);
-        }
+        transform.Translate(Vector3.back * GlobalSpeed * Time.deltaTime);
     }
 
     public override void ReceiveShot(float damage)
     {
         if (!isUnlocked)
         {
-            pawnEffect += 1; // Kurangi nilai negatif menuju nol
-            UpdateText();
+            base.ReceiveShot(damage); // Panggil logika tembakan dari class Barrier
 
             if (pawnEffect >= 0)
             {
-                isUnlocked = true; //Barrier sudah bisa diambil oleh Player
+                isUnlocked = true; // Barrier sudah bisa diambil oleh Player
             }
         }
     }
 
     void ApplyEffect()
     {
-        PlayerController player = FindAnyObjectByType<PlayerController>();
-        if (player != null)
+        if (!effectApplied) // Pastikan efek hanya diterapkan sekali
         {
-            player.IncreasePawnHP(hpIncreaseAmount);
+            PlayerController player = PlayerController.Instance;
+            if (player != null)
+            {
+                player.IncreasePawnHP(hpIncreaseAmount); // Berikan efek peningkatan HP
+            }
+            effectApplied = true; // Tandai efek sudah diterapkan
+            Destroy(gameObject); // Hancurkan barrier setelah diambil
         }
-        Destroy(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!isUnlocked && other.CompareTag("Player")) // Jika belum terbuka dan kena Pawn
+        if (!isUnlocked && other.CompareTag("Player")) // Jika belum terbuka dan kena Pawn (dengan tag "Player")
         {
-            Destroy(other.gameObject); //Hancurkan hanya pawn yang menabrak
+            // Hancurkan hanya pawn yang menabrak
+            PlayerController player = PlayerController.Instance;
+            if (player != null)
+            {
+                player.DestroyPawnOnCollision(other); // Hancurkan pawn yang menabrak
+                player.ArrangePawns(); // Atur ulang formasi
+            }
         }
         else if (isUnlocked && other.CompareTag("Player")) // Jika sudah terbuka, Player bisa mengambil buff
         {
