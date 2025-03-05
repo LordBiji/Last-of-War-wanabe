@@ -764,7 +764,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d24c6eb194fb08a46bc0513adf53c30c, type: 2}
+  - {fileID: 2100000, guid: f29759d379b31ce419822056d9e25cc1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1372,7 +1372,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ef2e748a4a36c474e9e41264597df43c, type: 2}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1567,7 +1567,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: 2b72d7e51fc89344cbb7248d348d8c1d, type: 2}
+  sharedProfile: {fileID: 11400000, guid: 10fc4df2da32a41aaa32d77bc913491c, type: 2}
 --- !u!4 &832575519
 Transform:
   m_ObjectHideFlags: 0
@@ -1717,9 +1717,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0331524b0a11dbb43b56937744eb897a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPrefab: {fileID: 5321093168218382114, guid: 943c5978725cc724891db56531458365, type: 3}
-  barrierPrefab: {fileID: 1071164706427715706, guid: ffc763545cd8bbc429f51ed2c595d29d, type: 3}
-  bossPrefab: {fileID: 8015412300851749650, guid: efff4ce4038fe364597159a1826be229, type: 3}
+  enemyPrefab: {fileID: 5321093168218382114, guid: f200f35b7447e0142a65b8294420b04c, type: 3}
+  barrierPrefab: {fileID: 1071164706427715706, guid: ed395f1a0b5d012479cdd25e38d60281, type: 3}
+  bossPrefab: {fileID: 8015412300851749650, guid: a57d71ce7d90e864eb11423ea87efa9a, type: 3}
   spawnPoints:
   - {fileID: 298764251}
   - {fileID: 93738656}
@@ -1727,8 +1727,8 @@ MonoBehaviour:
   spawnRate: 3
   enemySpacing: 0.5
   waveManager: {fileID: 1483187782}
-  bonusHPBarrierPrefab: {fileID: 7727585342343131622, guid: 51f4565a29372184ba8263cfa2628724, type: 3}
-  weaponBarrierPrefab: {fileID: 5765389781589426660, guid: 5454b7183cf6bce4eab460aff64c0a41, type: 3}
+  bonusHPBarrierPrefab: {fileID: 7727585342343131622, guid: 89f80ead5444dbf4a894dea3beb670e8, type: 3}
+  weaponBarrierPrefab: {fileID: 5765389781589426660, guid: 9d7dfc6a9fef5704494a4e57459a4815, type: 3}
 --- !u!4 &865349241
 Transform:
   m_ObjectHideFlags: 0
@@ -1961,7 +1961,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ef2e748a4a36c474e9e41264597df43c, type: 2}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2433,72 +2433,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1375784152}
   m_CullTransparentMesh: 1
---- !u!1 &1429825096
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1429825099}
-  - component: {fileID: 1429825098}
-  m_Layer: 0
-  m_Name: Player
-  m_TagString: Player
-  m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1429825098
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429825096}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bb00c29e3ac107545a8b9447c59eea43, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pawnPrefab: {fileID: 1063946572663222384, guid: 643da7e0313ae254f9bd4636373840d8, type: 3}
-  pawnParent: {fileID: 1429825099}
-  speed: 10
-  fireRate: 0.5
-  shootRange: 20
-  shootDamage: 10
-  shootableLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  bulletPrefabs:
-  - {fileID: 6792834446405388508, guid: 004374e045ce46f44a0a9cb6f3288772, type: 3}
-  - {fileID: 6792834446405388508, guid: 004374e045ce46f44a0a9cb6f3288772, type: 3}
-  - {fileID: 8688981070911940026, guid: 1c5a6449e1892584dbfcdfc4f93d804e, type: 3}
-  bulletSpeed: 10
-  bulletLifetime: 1.5
-  bulletRadius: 0.3
-  pawnModels:
-  - {fileID: 992842505318377911, guid: 3c3f707d257597348aaf1b63264190c4, type: 3}
-  - {fileID: 992842505318377911, guid: 3c3f707d257597348aaf1b63264190c4, type: 3}
-  - {fileID: 4357770906182979348, guid: 6f13bd7938146a44ebf08feeb806fb95, type: 3}
-  pawnHP: 5
-  pawnDPS: 0.5
---- !u!4 &1429825099
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429825096}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: -3.49}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1483187781
 GameObject:
   m_ObjectHideFlags: 0
@@ -2530,11 +2464,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   waves:
   - waveName: Begining
-    minEnemies: 5
+    minEnemies: 4
     maxEnemies: 7
-    minBarrierValue: 2
-    maxBarrierValue: 4
-    repeatCount: 6
+    minBarrierValue: 1
+    maxBarrierValue: 2
+    repeatCount: 5
     addBonusHP: 1
     minBonusHPValue: 4
     maxBonusHPValue: 5
@@ -2544,24 +2478,24 @@ MonoBehaviour:
     spawnBoss: 0
     bossHP: 0
   - waveName: Calling two
-    minEnemies: 5
-    maxEnemies: 6
-    minBarrierValue: 5
+    minEnemies: 6
+    maxEnemies: 8
+    minBarrierValue: 4
     maxBarrierValue: 6
-    repeatCount: 6
+    repeatCount: 5
     addBonusHP: 0
     minBonusHPValue: 0
     maxBonusHPValue: 0
-    addWeaponBarrier: 1
-    minWeaponBarrierValue: 6
-    maxWeaponBarrierValue: 8
+    addWeaponBarrier: 0
+    minWeaponBarrierValue: 0
+    maxWeaponBarrierValue: 0
     spawnBoss: 0
     bossHP: 0
-  - waveName: 0
+  - waveName: tiga
     minEnemies: 7
-    maxEnemies: 9
-    minBarrierValue: 7
-    maxBarrierValue: 10
+    maxEnemies: 8
+    minBarrierValue: 5
+    maxBarrierValue: 7
     repeatCount: 5
     addBonusHP: 0
     minBonusHPValue: 0
@@ -2829,7 +2763,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ef2e748a4a36c474e9e41264597df43c, type: 2}
+  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3341,6 +3275,63 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1001 &7226056379547506749
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -3.49
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863136837335440690, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3734909086127920039, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
+      propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7680584f1c6bdf3459819acabae11f39, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3352,7 +3343,7 @@ SceneRoots:
   - {fileID: 1683703373}
   - {fileID: 1643207321}
   - {fileID: 1483187783}
-  - {fileID: 1429825099}
+  - {fileID: 7226056379547506749}
   - {fileID: 865349241}
   - {fileID: 263177346}
   - {fileID: 573327751}
