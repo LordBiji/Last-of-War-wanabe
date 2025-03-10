@@ -6,8 +6,38 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Base.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/Level Menu.unity
+    guid: f43e6d4c76ed7064786cd729379d3a71
+  - enabled: 1
+    path: Assets/Scenes/Level 1.unity
+    guid: 2f2b68fbce15d7a4dae7cef2b39ca71f
+  - enabled: 1
+    path: Assets/Scenes/Level 2.unity
+    guid: 283bc6830ce36a14389f1d52da3c3bfa
+  - enabled: 1
+    path: Assets/Scenes/Level 3.unity
+    guid: 5872e021cc5e0354e9567f2bdb50939b
+  - enabled: 1
+    path: Assets/Scenes/Level 4.unity
+    guid: e2bd3a7f81e50394f8f18ea9763c83bb
+  - enabled: 1
+    path: Assets/Scenes/Level 5.unity
+    guid: fc4c4418db33ec94981fcba094dc0e14
+  - enabled: 1
+    path: Assets/Scenes/Level 6.unity
+    guid: c7ea27b900f6a754590ff3b1600c3cf4
+  - enabled: 1
+    path: Assets/Scenes/Level 7.unity
+    guid: 2e227e167359be542814c8fecdc21385
+  - enabled: 1
+    path: Assets/Scenes/Level 8.unity
+    guid: f25499aa975ff6d4e8b64ea970859111
+  - enabled: 1
+    path: Assets/Scenes/Level 9.unity
+    guid: 37c7e208fcef1284ab53bb307a0e6f41
+  - enabled: 1
+    path: Assets/Scenes/Level 10.unity
+    guid: 71468c7e8b1792f46ad94ebd4b5f2bc6
   m_configObjects:
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 1668f43f77850284abf6dd8cced37323, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

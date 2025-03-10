@@ -62,6 +62,16 @@ public class GameManager : MonoBehaviour
         gameEnded = true;
         winCanvas.SetActive(true);
         Time.timeScale = 0f; // Pause game
+
+        // Simpan progress level yang telah diselesaikan
+        int currentLevel = int.Parse(SceneManager.GetActiveScene().name.Split(' ')[1]);
+        int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
+
+        if (currentLevel >= unlockedLevel)
+        {
+            PlayerPrefs.SetInt("UnlockedLevel", currentLevel + 1);
+            PlayerPrefs.Save();
+        }
     }
 
     public void LoseGame()
