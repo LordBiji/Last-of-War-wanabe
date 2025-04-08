@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     private bool gameEnded = false;
 
     private WaveManager waveManager;
+    private int currentLevel;
 
     void Awake()
     {
@@ -28,6 +29,17 @@ public class GameManager : MonoBehaviour
         winCanvas.SetActive(false);
         loseCanvas.SetActive(false);
         waveManager = FindFirstObjectByType<WaveManager>(); // Ambil script WaveManager
+
+        // Ambil nomor level saat ini
+        string sceneName = SceneManager.GetActiveScene().name;
+        if (sceneName.StartsWith("level "))
+        {
+            currentLevel = int.Parse(sceneName.Split(' ')[1]);
+        }
+        else
+        {
+            currentLevel = 1;
+        }
     }
 
     void Update()
@@ -71,6 +83,24 @@ public class GameManager : MonoBehaviour
         {
             PlayerPrefs.SetInt("UnlockedLevel", currentLevel + 1);
             PlayerPrefs.Save();
+        }
+    }
+
+    public void LoadNextLevel()
+    {
+        Time.timeScale = 1f;
+        int nextLevel = currentLevel + 1;
+        string nextLevelName = "level " + nextLevel;
+
+        // Cek apakah scene tersedia di Build Settings
+        if (SceneUtility.GetBuildIndexByScenePath(nextLevelName) != -1)
+        {
+            SceneManager.LoadScene(nextLevelName);
+        }
+        else
+        {
+            Debug.Log("Ini adalah level terakhir!");
+            SceneManager.LoadScene("LevelMenu"); // Kembali ke menu jika tidak ada level berikutnya
         }
     }
 
